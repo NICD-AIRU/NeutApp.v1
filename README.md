@@ -51,6 +51,11 @@ Must contain one sheet which looks as follows (also, an example is attached):
 
 ![helper](Images/helper_file_view.png)
 
+NOTE: The dashboard can accommodate data produced from four platforms (which would be mentioned under "instrument" column):
+- victor-5
+- ensight
+- synergy
+- glomax
 
 **`experiments`** — one row per bnab × virus experiment:
 
