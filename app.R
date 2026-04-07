@@ -1904,6 +1904,15 @@ server <- function(input, output, session) {
           style = createStyle(fontColour = "#FF0000"),
           type  = "expression"
         )
+
+        conditionalFormatting(
+          wb, "05_control_summary",
+          cols  = 7,
+          rows  = pct_rows_05,
+          rule  = "AND($G1>0.1,$G1<0.3)",
+          style = createStyle(fontColour = "#FF9900"),
+          type  = "expression"
+        )
       }
 
       # -- 06_percent_inhibition -----------------------------------------------
@@ -1947,9 +1956,9 @@ server <- function(input, output, session) {
         )
 
         conditionalFormatting(
-          wb, "05_control_summary",
+          wb, "06_percent_inhibition",
           cols  = 7,
-          rows  = pct_rows_05,
+          rows  = pct_rows_06,
           rule  = "AND($G1>0.1,$G1<0.3)",
           style = createStyle(fontColour = "#FF9900"),
           type  = "expression"
