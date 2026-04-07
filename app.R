@@ -1909,7 +1909,7 @@ server <- function(input, output, session) {
           wb, "05_control_summary",
           cols  = 7,
           rows  = pct_rows_05,
-          rule  = "AND($G1>0.1,$G1<0.3)",
+          rule  =  "$G2>0.1*$G2<0.3",
           style = createStyle(fontColour = "#FF9900"),
           type  = "expression"
         )
@@ -1959,7 +1959,7 @@ server <- function(input, output, session) {
           wb, "06_percent_inhibition",
           cols  = 7,
           rows  = pct_rows_06,
-          rule  = "AND($G1>0.1,$G1<0.3)",
+          rule  = "$G2>0.1*$G2<0.3",
           style = createStyle(fontColour = "#FF9900"),
           type  = "expression"
         )
