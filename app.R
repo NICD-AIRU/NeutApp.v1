@@ -721,7 +721,7 @@ ui <- dashboardPage(
             tags$ol(style = "padding-left:20px; line-height:2;",
               tags$li("Upload your ", tags$b("Helper File"), " in the sidebar"),
               tags$li("Review the ", tags$b("Helper Setup"), " tab"),
-              tags$li("Upload ", tags$b("plate XLS files"), " in the Plate Data tab"),
+              tags$li("Upload ", tags$b("plate .xlsx files"), " in the Plate Data tab"),
               tags$li("Click ", tags$b("Run Analysis")),
               tags$li("Explore ", tags$b("Inhibition Curves"), ", ", tags$b("Titer Results"), ", ", tags$b("Plate Review")),
               tags$li("Download XLSX from the ", tags$b("Export"), " tab")
