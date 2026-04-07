@@ -58,6 +58,24 @@ INSTRUMENT_LAYOUTS <- list(
   ensight    = list(sheet = "Sheet1",      range = "B11:M18", use_first = TRUE)
 )
 
+ensure_xlsx <- function(fpath, fname) {
+  if (tolower(tools::file_ext(fname)) != "xls") return(fpath)
+  tryCatch({
+    sheets    <- readxl::excel_sheets(fpath)
+    data_list <- lapply(sheets, function(s)
+      as.data.frame(readxl::read_excel(fpath, sheet = s,
+                                       col_names = FALSE,
+                                       col_types = "text")))
+    names(data_list) <- sheets
+    tmp_xlsx <- tempfile(fileext = ".xlsx")
+    openxlsx::write.xlsx(data_list, tmp_xlsx, colNames = FALSE)
+    tmp_xlsx
+  }, error = function(e) {
+    warning("XLS -> XLSX conversion failed for ", fname, ": ", e$message)
+    fpath  # fall back to original path on error
+  })
+}
+
 # -- Utility functions ---------------------------------------------------------
 normalize_instrument <- function(x) tolower(trimws(as.character(x)))
 
