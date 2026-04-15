@@ -58,23 +58,23 @@ INSTRUMENT_LAYOUTS <- list(
   ensight    = list(sheet = "Sheet1",      range = "B11:M18", use_first = TRUE)
 )
 
-ensure_xlsx <- function(fpath, fname) {
-  if (tolower(tools::file_ext(fname)) != "xls") return(fpath)
-  tryCatch({
-    sheets    <- readxl::excel_sheets(fpath)
-    data_list <- lapply(sheets, function(s)
-      as.data.frame(readxl::read_excel(fpath, sheet = s,
-                                       col_names = FALSE,
-                                       col_types = "text")))
-    names(data_list) <- sheets
-    tmp_xlsx <- tempfile(fileext = ".xlsx")
-    openxlsx::write.xlsx(data_list, tmp_xlsx, colNames = FALSE)
-    tmp_xlsx
-  }, error = function(e) {
-    warning("XLS -> XLSX conversion failed for ", fname, ": ", e$message)
-    fpath  # fall back to original path on error
-  })
-}
+#ensure_xlsx <- function(fpath, fname) {
+#  if (tolower(tools::file_ext(fname)) != "xls") return(fpath)
+# tryCatch({
+#   sheets    <- readxl::excel_sheets(fpath)
+#    data_list <- lapply(sheets, function(s)
+#      as.data.frame(readxl::read_excel(fpath, sheet = s,
+#                                       col_names = FALSE,
+#                                       col_types = "text")))
+#    names(data_list) <- sheets
+#    tmp_xlsx <- tempfile(fileext = ".xlsx")
+#    openxlsx::write.xlsx(data_list, tmp_xlsx, colNames = FALSE)
+#    tmp_xlsx
+#  }, error = function(e) {
+#    warning("XLS -> XLSX conversion failed for ", fname, ": ", e$message)
+#    fpath  # fall back to original path on error
+#  })
+#}
 
 # -- Utility functions ---------------------------------------------------------
 normalize_instrument <- function(x) tolower(trimws(as.character(x)))
@@ -97,6 +97,58 @@ get_instrument_read_params <- function(instrument, file_stem = NULL) {
   )
 }
 
+# ── CSV range reader (for Ensight .csv exports) ───────────────────────────────
+# Reads a comma-separated plate file and extracts a rectangular range specified
+# in Excel-style notation (e.g. "B11:M18").
+# Returns a data.frame with ncol = number of columns in range, colnames = "1","2",...
+read_csv_range <- function(fpath, range) {
+  tl <- strsplit(range, ":")[[1]][1]
+  br <- strsplit(range, ":")[[1]][2]
+  col_letter_to_num_local <- function(s) {
+    s <- toupper(s)
+    sum(sapply(seq_len(nchar(s)), function(i)
+      (utf8ToInt(substr(s, i, i)) - 64L) * 26L^(nchar(s) - i)))
+  }
+  tl_col <- col_letter_to_num_local(gsub("[0-9]", "", tl))
+  tl_row <- as.integer(gsub("[A-Za-z]", "", tl))
+  br_col <- col_letter_to_num_local(gsub("[0-9]", "", br))
+  br_row <- as.integer(gsub("[A-Za-z]", "", br))
+
+  raw <- tryCatch({
+    
+    # Detect number of columns
+    n_cols <- max(count.fields(fpath, sep = ","))
+    
+    # Keep only columns 2–13 (B:M), skip others
+    col_classes <- rep("NULL", n_cols)
+    col_classes[1:13] <- "character"
+    
+    read.csv(
+      fpath,
+      header = FALSE,
+      colClasses = col_classes,
+      sep = ",",
+      stringsAsFactors = FALSE,
+      fill = TRUE,
+      blank.lines.skip = FALSE
+    )
+    
+  }, error = function(e) {
+    stop("Cannot read CSV: ", conditionMessage(e))
+  })
+
+  row_idx <- seq(tl_row, br_row)
+  col_idx <- seq(tl_col, br_col)
+  row_idx <- row_idx[row_idx <= nrow(raw)]
+  col_idx <- col_idx[col_idx <= ncol(raw)]
+
+  mat <- raw[row_idx, col_idx, drop = FALSE]
+  mat[] <- lapply(mat, function(x) as.character(x))
+  colnames(mat) <- as.character(seq_len(ncol(mat)))
+  rownames(mat) <- NULL
+  mat
+}
+           
 get_plate_instrument <- function(helper_table, pid) {
   if (is.null(helper_table)) return("victor-5")
   rows <- helper_table[trimws(toupper(as.character(helper_table$plate_id))) ==
