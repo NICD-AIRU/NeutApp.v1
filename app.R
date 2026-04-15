@@ -1660,7 +1660,20 @@ server <- function(input, output, session) {
 
   # -- Export XLSX -------------------------------------------------------------
   output$dl_xlsx <- downloadHandler(
-    filename = function() paste0("NeutResults_", input$run_date, ".xlsx"),
+    filename = function() {
+      # Extract first name only from analyst name field
+      analyst_first <- trimws(strsplit(trimws(input$user_name), "\\s+")[[1]][1])
+      if (is.na(analyst_first) || nchar(analyst_first) == 0) analyst_first <- "Analyst"
+      # project = Study column from the helper file (plate_setup sheet)
+      project_id <- NA_character_
+      if (!is.null(rv$helper_table)) {
+        study_col <- names(rv$helper_table)[tolower(names(rv$helper_table)) == "study"][1]
+        if (!is.na(study_col))
+          project_id <- trimws(as.character(rv$helper_table[[study_col]][1]))
+      }
+      if (is.na(project_id) || nchar(project_id) == 0) project_id <- "Project"
+      paste0("neut-report_", project_id, "_", analyst_first, "_", input$run_date, ".xlsx")
+    },
     content = function(file) {
       req(rv$analysis_done)
       wb <- createWorkbook()
