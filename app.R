@@ -2099,7 +2099,22 @@ server <- function(input, output, session) {
             upper_4pl       = ifelse(is.na(row_t$upper_4pl) | !is.finite(row_t$upper_4pl),
                                      "NA", as.character(round(row_t$upper_4pl, 4))),
             ic50_4pl        = fmt_ic(row_t$ic50_4pl,  oc, sc),
-            ic80_4pl        = fmt_ic(row_t$ic80_4pl,  oc, sc),
+            ic80_4pl        = fmt_ic(row_t$ic80_4pl,  oc, sc),            
+            # Fold change: point-based vs curve-based (4PL)
+            fold_change_ic50 = {
+              pb_v <- row_t$ic50_pb; pl_v <- row_t$ic50_4pl
+              if (!is.na(pb_v) && is.finite(pb_v) && pb_v > 0 &&
+                  !is.na(pl_v) && is.finite(pl_v) && pl_v > 0)
+                as.character(round(pb_v / pl_v, 4))
+              else "NA"
+            },
+            fold_change_ic80 = {
+              pb_v <- row_t$ic80_pb; pl_v <- row_t$ic80_4pl
+              if (!is.na(pb_v) && is.finite(pb_v) && pb_v > 0 &&
+                  !is.na(pl_v) && is.finite(pl_v) && pl_v > 0)
+                as.character(round(pb_v / pl_v, 4))
+              else "NA"
+            },
             stringsAsFactors = FALSE, check.names = FALSE)
         }
       }
