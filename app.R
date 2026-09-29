@@ -16,7 +16,7 @@ options(shiny.maxRequestSize = 100 * 1024^2)
 suppressMessages({
   library(shiny)
   library(shinydashboard)
-  library(shinyjs)
+  #library(shinyjs)
   library(readxl)
   library(openxlsx)
   # Load only the tidyverse packages actually used (avoids memory crash on shinyapps.io)
